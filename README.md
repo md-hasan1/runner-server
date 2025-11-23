@@ -2,7 +2,7 @@
 
 This README is a concise, human-friendly summary of the Runner backend. It's organized for HR/stakeholders and new developers who need a quick, clear view of what the project is and how to get started.
 
-## 1) Project summary (HR-friendly)
+## 1) Project summary
 - What it does: Runner is the backend for a courier/delivery platform. It handles creating and tracking delivery orders (parcels), assigning drivers, managing warehouse receipts, processing payments and payouts, and sending emails and push notifications.
 - Who uses it: Customers, Drivers/Riders, Merchants, Warehouse operators, and Admins.
 - Business value (short):
