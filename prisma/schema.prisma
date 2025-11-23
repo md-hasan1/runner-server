@@ -1,0 +1,352 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  email         String         @unique
+  fullName      String         @default("")
+  phoneNumber   String
+  fcmToken      String?
+  profileImage  String         @default("")
+  expirationOtp DateTime?
+  location      String         @default("")
+  postalCode    String?
+  isCompleted   Boolean        @default(false)
+  customerId    String         @default("")
+  role          UserRole       @default(USER)
+  status        UserStatus     @default(ACTIVE)
+  isApproved    Boolean        @default(false)
+  otp           Int?
+  password      String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  parcel        Parcel[]
+  paymentInfo   PaymentInfo[]
+  driverProfile DriverProfile?
+  merchant      Merchant[]
+  cardInfo      CardInfo?
+  bankInfo      BankInfo?
+  roomsSent     Room[]         @relation("SenderRelation")
+  roomsReceived Room[]         @relation("ReceiverRelation")
+  chatsSent     Chat[]         @relation("SenderRelation")
+  chatsReceived Chat[]         @relation("ReceiverRelation")
+  riderRequest  RiderRequest[] @relation("rider")
+  assignRequest RiderRequest[] @relation("assigner")
+
+  whereHouseRequest WhereHouseRequest[]
+  paymentRequest    PaymentRequest[]
+  userParcel        UserParcel[]
+  receiver          Notification[]      @relation("Receiver")
+  sender            Notification[]      @relation("Sender")
+
+  @@map("Users")
+}
+
+model DriverProfile {
+  id                     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId                 String @unique @db.ObjectId
+  user                   User   @relation(fields: [userId], references: [id])
+  serviceType            String
+  companyName            String @default("")
+  personalIdentification String
+  proofOfAddress         String
+  ukDrivingLicenseFront  String
+
+  ukDrivingLicenseBack      String
+  registrationNumber        String
+  insuranceCertificate      String
+  motCertificate            String   @default("")
+  nationalInsuranceDocument String
+  shearCode                 String   @default("")
+  dbsCertificate            String
+  vehiclePhotoFront         String
+  vehiclePhotoBack          String
+  vehiclePhotoRight         String
+  vehiclePhotoLeft          String
+  vehicleCargoArea          String
+  speedometerMileage        String
+  longitude                 String    @default("")
+  latitude                  String    @default("")
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  @@map("driverProfile")
+}
+
+model Merchant {
+  id                   String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId               String   @unique @db.ObjectId
+  user                 User     @relation(fields: [userId], references: [id])
+  tradingName          String   @default("")
+  registeredNumber     String
+  registeredAddress    String
+  primaryPersonContact String
+  amount               Int      @default(0)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model PaymentInfo {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @db.ObjectId
+  user         User     @relation(fields: [userId], references: [id])
+  orderId      String   @db.ObjectId
+  parcel       Parcel   @relation(fields: [orderId], references: [id])
+  paymentInt   String
+  amount       Int
+  distance     String
+  isReturnTrip Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Parcel {
+  id             String @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String @db.ObjectId
+  user           User   @relation(fields: [userId], references: [id])
+  pickupName     String
+  pickupMobile   String
+  pickupEmail    String
+  pickupPostCode String
+  pickupAddress  String
+  productPrice   Float  @default(0.0)
+  deliveryCharge Float  @default(0.0)
+
+  preferredCollectionDate DateTime
+  avgCollectionTime       String
+  toavgCollectionTime     String
+  avgDeliveryTime         String
+  toAvgDeliveryTime       String
+
+  packageWeight      Float
+  serviceType        String
+  packageContent     String
+  specialInstruction String
+  isPayment          Boolean      @default(false)
+  distance           Float        @default(0.0)
+  status             ParcelStatus @default(REVIEW)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  recipients        Recipient[]
+  paymentInfo       PaymentInfo[]
+  parcelTrack       ParcelTrack[]
+  riderRequest      RiderRequest[]
+  whereHouseRequest WhereHouseRequest[]
+  provOfDelivery    ProvOfDelivery?
+  userParcel        UserParcel[]
+}
+
+model Recipient {
+  id                String @id @default(auto()) @map("_id") @db.ObjectId
+  deliveryInfoId    String @db.ObjectId
+  recipientName     String
+  recipientMobile   String
+  recipientEmail    String
+  recipientPostCode String
+  recipientAddress  String
+
+  parcel Parcel @relation(fields: [deliveryInfoId], references: [id], onDelete: Cascade)
+}
+
+model CardInfo {
+  id             String           @id @default(auto()) @map("_id") @db.ObjectId
+  bankName       String
+  bankHolderName String
+  accountNumber  String
+  userId         String           @unique @db.ObjectId
+  user           User?            @relation(fields: [userId], references: [id])
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  PaymentRequest PaymentRequest[]
+
+  @@map("cardInfo")
+}
+
+model ParcelTrack {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  orderId   String   @db.ObjectId
+  parcel    Parcel   @relation(fields: [orderId], references: [id])
+  title     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BankInfo {
+  id             String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String           @unique @db.ObjectId
+  user           User             @relation(fields: [userId], references: [id])
+  bankName       String
+  bankHolderName String
+  sortCode       String
+  accountNumber  String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  PaymentRequest PaymentRequest[]
+
+  @@map("bankInfo")
+}
+
+model Chat {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  senderId   String   @db.ObjectId
+  receiverId String   @db.ObjectId
+  message    String
+  roomId     String   @db.ObjectId
+  images     String[]
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  sender     User     @relation("SenderRelation", fields: [senderId], references: [id])
+  receiver   User     @relation("ReceiverRelation", fields: [receiverId], references: [id])
+  room       Room     @relation(fields: [roomId], references: [id])
+
+  @@map("chats")
+}
+
+model Room {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  senderId   String   @db.ObjectId
+  receiverId String   @db.ObjectId
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  sender     User     @relation("SenderRelation", fields: [senderId], references: [id])
+  receiver   User     @relation("ReceiverRelation", fields: [receiverId], references: [id])
+  chat       Chat[]
+
+  @@map("rooms")
+}
+
+model RiderRequest {
+  id              String             @id @default(auto()) @map("_id") @db.ObjectId
+  assignId        String             @db.ObjectId
+  assigner        User               @relation("assigner", fields: [assignId], references: [id])
+  riderId         String             @db.ObjectId
+  rider           User               @relation("rider", fields: [riderId], references: [id])
+  parcelId        String             @db.ObjectId
+  parcel          Parcel             @relation(fields: [parcelId], references: [id])
+  deliveryCharge  Float              @default(0.0)
+  status          RiderRequestStatus @default(PENDING)
+  rejectionReason String?            @default("")
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@map("riderRequest")
+}
+
+model WhereHouseRequest {
+  id              String                  @id @default(auto()) @map("_id") @db.ObjectId
+  whereHouseId    String                  @db.ObjectId
+  whereHouse      User                    @relation(fields: [whereHouseId], references: [id])
+  parcelId        String                  @db.ObjectId
+  parcel          Parcel                  @relation(fields: [parcelId], references: [id])
+  status          whereHouseRequestStatus @default(RECEIVED)
+  rejectionReason String?                 @default("")
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+
+  @@map("whereHouseRequest")
+}
+
+model PaymentRequest {
+  id        String        @id @default(auto()) @map("_id") @db.ObjectId
+  status    paymentStatus @default(PENDING)
+  type      String
+  cardId    String?       @db.ObjectId
+  card      CardInfo?     @relation(fields: [cardId], references: [id])
+  bankId    String?       @db.ObjectId
+  bank      BankInfo?     @relation(fields: [bankId], references: [id])
+  userId    String        @db.ObjectId
+  user      User          @relation(fields: [userId], references: [id])
+  amount    Float
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model ProvOfDelivery {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  parcelId   String   @unique @db.ObjectId
+  parcel     Parcel   @relation(fields: [parcelId], references: [id])
+  proveImage String
+  signature  String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model UserParcel {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  user      User     @relation(fields: [userId], references: [id])
+  parcelId  String   @db.ObjectId
+  parcel    Parcel   @relation(fields: [parcelId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  receiverId String   @db.ObjectId
+  senderId   String   @db.ObjectId
+  receiver   User     @relation("Receiver", fields: [receiverId], references: [id])
+  sender     User     @relation("Sender", fields: [senderId], references: [id])
+  title      String
+  body       String
+  isRead     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("notifications")
+}
+
+enum paymentStatus {
+  PENDING
+  COMPLETE
+  PAY_LATER
+  REJECTED
+}
+
+enum UserRole {
+  ADMIN
+  SUPER_ADMIN
+  USER
+  MERCHANT
+  DELIVERYPERSON
+  WAREHOUSE
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  BLOCKED
+}
+
+enum ParcelStatus {
+  REVIEW
+  PENDING
+  REJECTED
+  DELIVERED
+  PAYMENT_PENDING
+}
+
+enum RiderRequestStatus {
+  PENDING
+  ACCEPTED
+  WHEREHOUSE_RECIVED
+  DELIVERED
+  REJECTED
+}
+
+enum whereHouseRequestStatus {
+  RECEIVED
+  REJECTED
+  SEND
+  REVIEW
+  PENDING
+  DELIVERED
+}
