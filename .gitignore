@@ -1,6 +1,11 @@
 node_modules
+
 # Keep environment variables out of version control
+
 dist
+
 .vercel
+
 .environment
-.env
+
+config.bat
