@@ -10,14 +10,14 @@ This README is a concise, human-friendly summary of the Runner backend. It's org
   - Enables drivers and warehouses to manage pickups and drop-offs.
   - Automates payments, payouts and invoicing for merchants.
 
-## 2) Core features (one-liner bullets)
+## 2) Core features 
 - Create & track parcels and recipients.
 - Driver matching and accept/reject ride flows.
 - Payment flows with Stripe and pay-later invoicing.
 - Email invoicing (PDF) and push notifications (Firebase FCM).
 - File uploads for profiles and proof-of-delivery (Cloudinary/DO/local).
 
-## 3) Tech stack (short)
+## 3) Tech stack 
 - Node.js + TypeScript — runtime and type safety.
 - Express — HTTP server & routing.
 - Prisma — DB ORM and types.
@@ -27,7 +27,7 @@ This README is a concise, human-friendly summary of the Runner backend. It's org
 - Multer / Cloudinary / DigitalOcean Spaces — file uploads.
 - Zod — request validation.
 
-## 4) System structure (simple)
+## 4) System structure 
 - `src/app/modules/*/*.routes.ts` — route definitions and middleware mounting.
 - `src/app/modules/*/*.controller.ts` — controllers: parse request and call services.
 - `src/app/modules/*/*.service.ts` — services: business logic, DB operations, external API calls.
